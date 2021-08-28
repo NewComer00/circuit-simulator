@@ -7,11 +7,11 @@ WIRE_WIDTH = 50;
 
 % each row: start_x,end_x,resistance
 % first row describes the wire resistance info
-RESISTANCE_INFO = [0,0,0.1;100,200,0.6;];
+RESISTANCE_INFO = [0,0,0.02;200,300,0.4];
 
-ELECTRONS_NUM = 10;
+ELECTRONS_NUM = 100;
 
-FIELD_FACTOR = 1;
+FIELD_FACTOR = 5;
 FIELD_DIRECTION = [-1,0];
 
 
@@ -30,15 +30,26 @@ resistance_map = RESISTANCE_INFO(1,3) * ones(WIRE_WIDTH, WIRE_LENGTH);
 for res_info = RESISTANCE_INFO(2:end,:)'
 	resistance_map(:,[res_info(1):res_info(2)]) = res_info(3);
 end
-imagesc(resistance_map)
-title("resistance_map")
-pause(0.5)
+imagesc(resistance_map);
+title("resistance_map");
+pause(0.5);
 
 
-field_static = FIELD_FACTOR * FIELD_DIRECTION;
+field_static = FIELD_DIRECTION;
+field_dynamic = zeros(ELECTRONS_NUM, 2);
+
 
 while true
-	electrons_vel = electrons_vel + field_static;
+	for e = 1:ELECTRONS_NUM
+		diff = electrons_pos([1:e-1,e+1:end],:) - electrons_pos(e,:);
+		% TODO temporarily ignore all zero row vectors in diff
+		diff(all(diff==0,2),:) = [];
+		distance = sqrt(sum(diff.^2, 2));
+		field_dynamic(e,:) = -sum(diff./(distance.^3), 1);
+
+	end
+	field = round(field_static + FIELD_FACTOR * field_dynamic);
+	electrons_vel = electrons_vel + field;
 
 	% randomly set some elec velocities into 0 based on the resistance
 	elecs_pos_idx = sub2ind( ...
