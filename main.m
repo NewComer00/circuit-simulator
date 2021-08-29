@@ -73,8 +73,8 @@ while true
     q = quiver(electrons_pos(:,1),electrons_pos(:,2), ...
         field(:,1),field(:,2));
     q.AutoScale = 0;
-    axis([1,WIRE_LENGTH,1,WIRE_WIDTH]);
     axis equal;
+    axis([1,WIRE_LENGTH,1,WIRE_WIDTH]);
     hold off;
 
     pause(0.05)
