@@ -48,7 +48,7 @@ while true
         field_dynamic(e,:) = sum(diff./(distance.^3), 1);
 
     end
-    field = round(field_static + FIELD_FACTOR * field_dynamic);
+    field = field_static + FIELD_FACTOR * field_dynamic;
     electrons_vel = electrons_vel - field;
 
     % randomly set some elec velocities into 0 based on the resistance
@@ -57,7 +57,7 @@ while true
     res_elecs_on = resistance_map(elecs_pos_idx);
     electrons_vel(rand(ELECTRONS_NUM,1)<=res_elecs_on,:) = 0;
 
-    electrons_pos = electrons_pos + electrons_vel;
+    electrons_pos = round(electrons_pos + electrons_vel);
 
     % the wire surfase is a doughnut
     electrons_pos(:,1) = mod(electrons_pos(:,1)-1, WIRE_LENGTH) + 1;
