@@ -8,17 +8,17 @@ WIRE_WIDTH = 100;
 % each row: start_x,end_x,resistance
 % first row describes the wire resistance info
 RESISTANCE_INFO = [0,0,0.01;
-                   100,150,0.2;
-                   200,300,0.4;
-                   400,450,0.5];
+                   100,150,0.1;
+                   200,300,0.2;
+                   400,450,0.1];
 
 ELECTRONS_NUM = 100;
 
 FIELD_FACTOR = 1;
-FIELD_DIRECTION = [-5,0];
+FIELD_DIRECTION = [-10,0];
 
+TIME_INTERVAL = 0.1;
 
-time_stamp = 0;
 
 electrons_pos = zeros(ELECTRONS_NUM, 2);
 % x coordinates, col subscripts, start from 1
@@ -38,6 +38,8 @@ end
 field_static = FIELD_DIRECTION;
 field_dynamic = zeros(ELECTRONS_NUM, 2);
 
+time_stamp = 0;
+
 
 while true
     for e = 1:ELECTRONS_NUM
@@ -49,7 +51,7 @@ while true
 
     end
     field = field_static + FIELD_FACTOR * field_dynamic;
-    electrons_vel = electrons_vel - field;
+    electrons_vel = electrons_vel - TIME_INTERVAL*field;
 
     % randomly set some elec velocities into 0 based on the resistance
     elecs_pos_idx = sub2ind( ...
@@ -57,24 +59,28 @@ while true
     res_elecs_on = resistance_map(elecs_pos_idx);
     electrons_vel(rand(ELECTRONS_NUM,1)<=res_elecs_on,:) = 0;
 
-    electrons_pos = round(electrons_pos + electrons_vel);
+    electrons_pos = round(electrons_pos + TIME_INTERVAL*electrons_vel);
 
     % the wire surfase is a doughnut
     electrons_pos(:,1) = mod(electrons_pos(:,1)-1, WIRE_LENGTH) + 1;
     electrons_pos(:,2) = mod(electrons_pos(:,2)-1, WIRE_WIDTH) + 1;
 
-    time_stamp = time_stamp + 1;
+    time_stamp = time_stamp + TIME_INTERVAL;
 
     imagesc(resistance_map);
     colormap(flipud(pink));
     caxis('manual');
     hold on;
+    
     plot(electrons_pos(:,1), electrons_pos(:,2), '.');
     q = quiver(electrons_pos(:,1),electrons_pos(:,2), ...
         field(:,1),field(:,2));
     q.AutoScale = 0;
+    
+    text(0, 0, "time: " + time_stamp + " units");
     axis equal;
     axis([1,WIRE_LENGTH,1,WIRE_WIDTH]);
+    
     hold off;
 
     pause(0.05)
